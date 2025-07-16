@@ -1,51 +1,78 @@
 import axios from 'axios';
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback
+} from 'react';
 
-const API_URL = 'https://rickandmortyapi.com/api/character/';
+const API_URL = 'https://rickandmortyapi.com/api/character';
 
 export function DataProvider({ children }) {
-  const [activePage, setActivePage] = useState(0);
+  const [params, setParams] = useState(() => {
+    const initial = new URLSearchParams(window.location.search);
+    if (!initial.has('page')) {
+      initial.set('page', '1');
+      window.history.replaceState({}, '', `?${initial.toString()}`);
+    }
+
+    return initial;
+  });
+
+  const updateParams = useCallback(
+    (key, value) => {
+      const updated = new URLSearchParams(params.toString());
+      updated.set(key, value);
+      setParams(updated);
+      window.history.replaceState({}, '', `?${updated.toString()}`);
+    },
+    [params]
+  );
+
   const [characters, setCharacters] = useState([]);
+  const [info, setInfo] = useState({});
   const [isFetching, setIsFetching] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [info, setInfo] = useState({});
-  const [apiURL, setApiURL] = useState(API_URL);
 
-  const fetchData = async (url) => {
-    setIsFetching(true);
-    setIsError(false);
+  const fetchData = useCallback(
+    async (url) => {
+      setIsFetching(true);
+      setIsError(false);
 
-    axios
-      .get(url)
-      .then(({ data }) => {
-        setIsFetching(false);
-        setCharacters(data.results);
-        setInfo(data.info);
-      })
-      .catch((e) => {
-        setIsFetching(false);
-        setIsError(true);
-        console.error(e);
-      });
-  };
+      axios
+        .get(url, { params })
+        .then(({ data }) => {
+          setCharacters(data.results);
+          setInfo(data.info);
+        })
+        .catch((e) => {
+          setIsError(true);
+          console.error(e);
+        })
+        .finally(() => {
+          setIsFetching(false);
+        });
+    },
+    [params]
+  );
 
   useEffect(() => {
-    fetchData(apiURL);
-  }, [apiURL]);
+    fetchData(API_URL);
+  }, [fetchData]);
 
   const dataValue = useMemo(
     () => ({
-      activePage,
-      setActivePage,
-      apiURL,
-      setApiURL,
+      params,
+      updateParams,
       characters,
       fetchData,
       isFetching,
       isError,
       info
     }),
-    [activePage, apiURL, characters, isFetching, isError, info, fetchData]
+    [characters, isFetching, isError, info, fetchData, updateParams, params]
   );
 
   return (

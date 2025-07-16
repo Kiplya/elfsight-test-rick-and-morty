@@ -1,62 +1,60 @@
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { useData } from './providers';
 
 export function Pagination() {
-  const [pages, setPages] = useState([]);
-  const { apiURL, info, activePage, setActivePage, setApiURL } = useData();
+  const { params, updateParams, info } = useData();
+  const currentPage = parseInt(params.get('page'));
+  const totalPages = info.pages;
 
-  const pageClickHandler = (index) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setActivePage(index);
-    setApiURL(pages[index]);
-  };
+  const pageClickHandler = useCallback(
+    (e) => {
+      const page = e.currentTarget.getAttribute('data-page');
+      if (!page) {
+        return;
+      }
 
-  useEffect(() => {
-    const createdPages = Array.from({ length: info.pages }, (_, i) => {
-      const URLWithPage = new URL(apiURL);
+      updateParams('page', parseInt(page));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [updateParams]
+  );
 
-      URLWithPage.searchParams.set('page', i + 1);
-
-      return URLWithPage;
-    });
-
-    setPages(createdPages);
-  }, [info]);
-
-  if (pages.length <= 1) return null;
+  if (totalPages <= 1) {
+    return null;
+  }
 
   return (
     <StyledPagination>
-      {pages[activePage - 1] && (
+      {currentPage > 2 && (
         <>
-          {activePage - 1 !== 0 && (
-            <>
-              <Page onClick={() => pageClickHandler(0)}>« First</Page>
-              <Ellipsis>...</Ellipsis>
-            </>
-          )}
-
-          <Page onClick={() => pageClickHandler(activePage - 1)}>
-            {activePage}
+          <Page data-page={1} onClick={pageClickHandler}>
+            « First
           </Page>
+          <Ellipsis>...</Ellipsis>
         </>
       )}
 
-      <Page active>{activePage + 1}</Page>
+      {currentPage > 1 && (
+        <Page data-page={currentPage - 1} onClick={pageClickHandler}>
+          {currentPage - 1}
+        </Page>
+      )}
 
-      {pages[activePage + 1] && (
+      <Page active>{currentPage}</Page>
+
+      {currentPage < totalPages && (
+        <Page data-page={currentPage + 1} onClick={pageClickHandler}>
+          {currentPage + 1}
+        </Page>
+      )}
+
+      {currentPage < totalPages - 1 && (
         <>
-          <Page onClick={() => pageClickHandler(activePage + 1)}>
-            {activePage + 2}
+          <Ellipsis>...</Ellipsis>
+          <Page data-page={totalPages} onClick={pageClickHandler}>
+            Last »
           </Page>
-
-          {activePage + 1 !== pages.length - 1 && (
-            <>
-              <Ellipsis>...</Ellipsis>
-              <Page onClick={() => pageClickHandler(pages.length)}>Last »</Page>
-            </>
-          )}
         </>
       )}
     </StyledPagination>
@@ -64,6 +62,7 @@ export function Pagination() {
 }
 
 const StyledPagination = styled.div`
+  margin-top: auto;
   width: 100%;
   text-align: center;
 `;
@@ -79,14 +78,6 @@ const Page = styled.span`
   &:hover {
     color: #83bf46;
   }
-`;
-
-const Container = styled.div`
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  justify-items: center;
-  gap: 30px;
 `;
 
 const Ellipsis = styled(Page)`
