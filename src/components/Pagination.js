@@ -11,7 +11,7 @@ export function Pagination() {
     (e) => {
       const page = e.currentTarget.getAttribute('data-page');
       if (!page) {
-        return;
+        return null;
       }
 
       updateParams([{ key: 'page', value: parseInt(page) }]);

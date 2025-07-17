@@ -7,30 +7,38 @@ const API_EPISODES_URL = 'https://rickandmortyapi.com/api/episode';
 
 export function PopupEpisodes({ episodes }) {
   const [series, setSeries] = useState([]);
-  const [isFetching, setIsFetching] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isError, setIsError] = useState(false);
 
   useEffect(() => {
     if (!episodes?.length) {
       return;
     }
 
+    setIsError(false);
     setIsFetching(true);
-
     const episodesIds = episodes.map((ep) => ep.match(/\d+$/)[0]);
 
     axios
       .get(`${API_EPISODES_URL}/${episodesIds.join(',')}`)
       .then(({ data }) => {
-        if (episodes.length === 1) {
-          setSeries([data]);
-        } else {
-          setSeries(data);
-        }
+        setSeries(Array.isArray(data) ? data : [data]);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsError(true);
+      })
+      .finally(() => {
+        setIsFetching(false);
       });
   }, [episodes]);
 
   if (isFetching) {
     return <Loader />;
+  }
+
+  if (isError || !episodes?.length) {
+    return null;
   }
 
   return (

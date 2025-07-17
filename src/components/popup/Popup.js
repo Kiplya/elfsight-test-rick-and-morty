@@ -1,5 +1,5 @@
 import styled, { css } from 'styled-components';
-import { useCallback } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import { PopupEpisodes } from './PopupEpisodes';
 import { PopupHeader } from './PopupHeader';
 import { PopupInfo } from './PopupInfo';
@@ -17,23 +17,45 @@ export function Popup({ settings: { visible, content = {} }, setSettings }) {
     episode: episodes
   } = content;
 
-  const togglePopup = useCallback(
-    (e) => {
-      if (e.currentTarget !== e.target) {
-        return;
-      }
+  const popupRef = useRef(null);
+  const togglePopup = useCallback(() => {
+    setSettings((prevState) => ({
+      ...prevState,
+      visible: !prevState.visible
+    }));
+  }, [setSettings]);
 
-      setSettings((prevState) => ({
-        ...prevState,
-        visible: !prevState.visible
-      }));
-    },
-    [setSettings]
-  );
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (popupRef.current && visible && !popupRef.current.contains(e.target)) {
+        togglePopup();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && visible) {
+        togglePopup();
+      }
+    };
+
+    if (visible) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [togglePopup, visible]);
 
   return (
     <PopupContainer visible={visible}>
-      <StyledPopup>
+      <StyledPopup ref={popupRef}>
         <CloseIcon onClick={togglePopup} />
 
         <PopupHeader
