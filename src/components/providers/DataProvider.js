@@ -8,7 +8,7 @@ import {
   useCallback
 } from 'react';
 
-const API_URL = 'https://rickandmortyapi.com/api/character';
+export const API_URL = 'https://rickandmortyapi.com/api/character';
 
 export function DataProvider({ children }) {
   const [params, setParams] = useState(() => {
@@ -21,12 +21,27 @@ export function DataProvider({ children }) {
     return initial;
   });
 
+  const resetParams = useCallback(() => {
+    const reseted = new URLSearchParams();
+    reseted.set('page', '1');
+    setParams(reseted);
+
+    window.history.pushState({}, '', `?${reseted.toString()}`);
+  }, []);
+
   const updateParams = useCallback(
-    (key, value) => {
-      const updated = new URLSearchParams(params.toString());
-      updated.set(key, value);
+    (queryParams) => {
+      let updated = new URLSearchParams(params.toString());
+
+      if (!queryParams.length) {
+        updated = new URLSearchParams(window.location.search);
+        window.history.replaceState({}, '', `?${updated.toString()}`);
+      } else {
+        queryParams.forEach((param) => updated.set(param.key, param.value));
+        window.history.pushState({}, '', `?${updated.toString()}`);
+      }
+
       setParams(updated);
-      window.history.replaceState({}, '', `?${updated.toString()}`);
     },
     [params]
   );
@@ -41,20 +56,19 @@ export function DataProvider({ children }) {
       setIsFetching(true);
       setIsError(false);
 
-      axios
-        .get(url, { params })
-        .then(({ data }) => {
-          setCharacters(data.results);
-          setInfo(data.info);
-        })
-        .catch((e) => {
-          setIsError(true);
-          console.error(e);
-        })
-        .finally(() => {
-          setIsFetching(false);
-        });
+      try {
+        const { data } = await axios.get(url, { params });
+
+        setCharacters(data.results);
+        setInfo(data.info);
+      } catch (err) {
+        setIsError(true);
+        console.error(err);
+      } finally {
+        setIsFetching(false);
+      }
     },
+
     [params]
   );
 
@@ -66,13 +80,23 @@ export function DataProvider({ children }) {
     () => ({
       params,
       updateParams,
+      resetParams,
       characters,
       fetchData,
       isFetching,
       isError,
       info
     }),
-    [characters, isFetching, isError, info, fetchData, updateParams, params]
+    [
+      characters,
+      isFetching,
+      isError,
+      info,
+      fetchData,
+      updateParams,
+      resetParams,
+      params
+    ]
   );
 
   return (

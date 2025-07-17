@@ -1,1 +1,1 @@
-export { DataProvider, useData } from './DataProvider';
+export { DataProvider, useData, API_URL } from './DataProvider';

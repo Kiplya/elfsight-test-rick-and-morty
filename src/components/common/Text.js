@@ -3,17 +3,11 @@ import styled from 'styled-components';
 export function Text({
   className,
   children,
-  style,
   color = '#ccc',
   fontSize = '16px'
 }) {
   return (
-    <StyledText
-      className={className}
-      style={style}
-      _color={color}
-      _fontSize={fontSize}
-    >
+    <StyledText className={className} _color={color} _fontSize={fontSize}>
       {children}
     </StyledText>
   );

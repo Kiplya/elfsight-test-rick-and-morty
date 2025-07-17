@@ -14,7 +14,7 @@ export function Pagination() {
         return;
       }
 
-      updateParams('page', parseInt(page));
+      updateParams([{ key: 'page', value: parseInt(page) }]);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     [updateParams]

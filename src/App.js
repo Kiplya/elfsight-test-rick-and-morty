@@ -1,8 +1,21 @@
+import { useEffect } from 'react';
 import styled from 'styled-components';
 import { Pagination, ItemsGrid, useData, Header, AppState } from './components';
 
 export function App() {
-  const { isFetching, isError } = useData();
+  const { isFetching, isError, updateParams } = useData();
+
+  useEffect(() => {
+    const handler = () => {
+      updateParams([]);
+    };
+
+    window.addEventListener('popstate', handler);
+
+    return () => {
+      window.removeEventListener('popstate', handler);
+    };
+  }, [updateParams]);
 
   return (
     <Main>
@@ -22,7 +35,7 @@ export function App() {
 }
 
 const Main = styled.main`
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 30px;
