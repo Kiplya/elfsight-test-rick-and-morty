@@ -81,12 +81,12 @@ const SelectBox = styled.div`
   transition: background-color 0.3s ease;
 
   ${({ isOpen }) => {
-    if (isOpen) return 'background-color: rgb(38, 56, 80);';
+    if (isOpen) return 'background-color: rgba(255, 255, 255, 0.15);';
   }}
 
   @media (hover: hover) {
     &:hover {
-      background-color: rgb(38, 56, 80);
+      background-color: rgba(255, 255, 255, 0.15);
     }
   }
 `;

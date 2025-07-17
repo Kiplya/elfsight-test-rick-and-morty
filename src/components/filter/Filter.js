@@ -105,8 +105,17 @@ export function Filter() {
       <Input value={filterType} onChange={setFilterType} placeholder="Type" />
 
       <ButtonContainer>
-        <Button label="Apply" onClick={applyFilter} />
-        <Button label="Reset" onClick={resetFilter} />
+        <StyledButton
+          label="Apply"
+          onClick={applyFilter}
+          color="rgba(131, 191, 70, 0.85)"
+        />
+
+        <StyledButton
+          label="Reset"
+          onClick={resetFilter}
+          color="rgba(253, 79, 83, 0.85)"
+        />
       </ButtonContainer>
     </StyledFilter>
   );
@@ -116,6 +125,21 @@ const StyledFilter = styled.div`
   display: grid;
   grid-template-columns: repeat(3, minmax(100px, 1fr));
   gap: 16px;
+
+  @media (max-width: 530px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const ButtonContainer = styled.div``;
+const ButtonContainer = styled.div`
+  gap: 16px;
+  display: flex;
+
+  @media (max-width: 530px) {
+    flex-direction: column;
+  }
+`;
+
+const StyledButton = styled(Button)`
+  flex: 1;
+`;
