@@ -97,7 +97,6 @@ export function Filter() {
         placeholder={speciesOptions ? 'Species' : 'Loading...'}
         value={filterSpecies}
         onChange={setFilterSpecies}
-        disabled={speciesOptions ? false : true}
         options={speciesOptions || []}
       />
 
